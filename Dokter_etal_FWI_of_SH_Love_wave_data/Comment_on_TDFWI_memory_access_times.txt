@@ -1,18 +1,24 @@
-During the development of our time-domain FWI code in 2007 we decided to store the down-sampled 
-forward wavefield in RAM instead of the hard drive. One problem was the large memory access time, 
-when storing the wavefields in 3D arrays, which where defined as an array of an array of pointers. 
-This 3D array definition leads to potentially fragmented memory blocks. On the other hand a simple 
-1D array is a single block of memory with significantly reduced access time. As a minimum example 
-we added two small C-codes, which simulate extensive memory accesses, similar to the one in the CTS
-test problem, using either a 1D or 3D array defined by an array of array of pointers. The
-average run time using the 1D array implementation on 1 core of an Intel Xeon E5-2670
-CPUs (2.6 GHz) with 128 GB DDR4 RAM on our NEC-cluster at the computing center
-of Kiel university, is 48.6 s. For comparison the implementation with the 3D pointer array
-requires a runtime of 83.7 s. Back in 2007 the difference in memory access time was even
-larger, due to a very slow connection between the CPU and RAM compared to the amount
-of memory required to store the downsampled wavefield for 2D elastic FWI. Based on the suggestions 
-of Reviewer 2, I again looked a little bit deeper into the problem and realized that it
-might be not relevant anymore. Even when using very moderate compiler optimization
-options like -O2, the runtime of both codes reduces to approximately 12 s. While such a
-performance boost by simple compiler optimization could not be achieved back in 2007, it
-seem to be not a problem anymore.
+During the development of our time-domain FWI code in 2007 we
+decided to store the down-sampled forward wavefield in RAM instead of the hard drive.
+One problem was the large memory access time, when storing the wavefields in 3D arrays,
+which where defined as an array of an array of pointers. This 3D array definition leads to
+potentially fragmented memory blocks. On the other hand a simple 1D array is a single
+block of memory with significantly reduced access time. As a minimum example we created
+two small C-codes, which simulate extensive memory accesses, similar to the one in the CTS
+test problem, using either a 1D or 3D array defined by an array of array of pointers.
+We run a few benchmarks on 1 core of an Intel Xeon E5-2670 CPUs (2.6 GHz) with 128
+GB DDR4 RAM on our NEC-cluster at the computing center of Kiel university. Operating
+system is Red Hat 4.4.7-9 and the codes are compiled with the GNU GCC 4.4.7 compiler:
+gcc time_1D_array.c -o time_1D_array
+gcc time_3D_array.c -o time_3D_array
+The smallest time out of three runs using the 1D array implementation is 21.0 s. For comparison
+the implementation with the 3D pointer array requires a runtime of 34.9 s. Back in
+2007 the difference in memory access time was even larger, due to a very slow connection
+between the CPU and RAM compared to the amount of memory required to store the downsampled
+forward wavefield for 2D elastic FWI. Based on the suggestion of reviewer 2, I again looked a
+little bit deeper into the problem. Even when using very moderate compiler optimization options 
+like -O2, the runtime of both codes reduces to approximately 11 s. Such a performance boost by 
+simple compiler optimization could not be achieved back in 2007. The code performance also depends 
+on the used compiler. The 1D array code runtime can be further drastically improved by using
+the Intel ICC compiler, while the 3D array code does not perform significantly better with the 
+ICC-compiler.
